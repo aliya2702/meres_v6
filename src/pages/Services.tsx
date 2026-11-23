@@ -2,14 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap, ScrollTrigger, useGSAP } from '@/motion/gsap';
 import { isReduced } from '@/motion/tokens';
 import { stackSection, drawLines, focusPullOnce, lineReveal, scrubText } from '@/motion/primitives';
-import { useFullMotion } from '@/motion/hooks/useMedia';
 import { services } from '@/content/copy';
 import { scrollToTarget } from '@/app/lenis';
-import type { CropKey } from '@/data/images';
+import { images, type CropKey } from '@/data/images';
 import { Page } from '@/components/Page';
 import { ImageFrame } from '@/components/ImageFrame';
 import { DraftingLines } from '@/components/DraftingLines';
-import { MaterialPanel } from '@/components/MaterialPanel';
 import { PrimaryCTA } from '@/components/PrimaryCTA';
 import { PlanRoomIndex, DraftedCorners } from '@/components/PlanRoom';
 import { LiquidStage } from '@/webgl/LiquidStage';
@@ -225,13 +223,12 @@ function Chapter({
 }
 
 /* ---------- Kitchens: sticky Liquid stage + drag strip ---------- */
-const kitchenFrames: CropKey[] = ['kitchenHero.full', 'kitchenWide.full', 'kitchenDetail.full', 'secondKitchen.full'];
+const kitchenFrames: CropKey[] = ['kitchenWide.full'];
 const stripCrops: CropKey[] = [
-  'kitchenHero.pendants',
-  'kitchenWide.island',
-  'kitchenDetail.faucet',
-  'kitchenDetail.mug',
   'secondKitchen.chandelier',
+  'kitchenDetail.faucet',
+  'kitchenHero.stools',
+  'kitchenDetail.mug',
 ];
 
 function Kitchens() {
@@ -345,9 +342,9 @@ function DragStrip() {
         aria-label="Kitchen details, scroll horizontally"
         data-lenis-prevent-touch=""
       >
-        {stripCrops.map((c, i) => (
+        {stripCrops.map((c) => (
           <div key={c} className="w-[78vw] shrink-0 snap-start sm:w-[46vw] lg:w-[min(30vw,520px)]">
-            <ImageFrame crop={c} ratio={i % 2 ? '4 / 5' : '1 / 1'} sizes="(min-width:1024px) 30vw, 78vw" />
+            <ImageFrame crop={c} ratio="4 / 3" sizes="(min-width:1024px) 30vw, 78vw" />
           </div>
         ))}
         <div className="w-[var(--margin)] shrink-0" aria-hidden="true" />
@@ -378,12 +375,6 @@ function Bathrooms() {
       title={b.title}
       n={2}
       bg="bg-linen"
-      background={
-        <MaterialPanel variant="stone" className="absolute inset-0">
-          <div className="caustic" />
-          <div className="caustic b" />
-        </MaterialPanel>
-      }
     >
       <div ref={ref} className="wrap grid12 gap-y-12 pb-[var(--section-pad)] pt-[clamp(40px,8vh,100px)] lg:pl-[calc(var(--margin)+var(--index-w))]">
         <div className="col-span-12 flex flex-col gap-8 lg:col-span-5">
@@ -405,30 +396,18 @@ function Bathrooms() {
   );
 }
 
-/* ---------- Whole-home: two frames slide over each other ---------- */
+/* ---------- Whole-home: dining nook in a clean 4:3 frame ---------- */
 function WholeHome() {
   const w = services.wholeHome;
   const ref = useRef<HTMLDivElement>(null);
-  const full = useFullMotion();
   useGSAP(
     () => {
       const root = ref.current!;
-      const a = root.querySelector<HTMLElement>('.wh-a');
-      const b = root.querySelector<HTMLElement>('.wh-b');
-      const line = root.querySelector<SVGSVGElement>('.wh-line');
       gsap.utils.toArray<HTMLElement>('.wh-para', root).forEach((p) =>
         gsap.from(p, { opacity: 0, y: 24, duration: 1, scrollTrigger: { trigger: p, start: 'top 80%', once: true } }),
       );
-      if (isReduced()) return;
-      const draw = drawLines(line, { paused: true });
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: root.querySelector('.wh-col'), start: 'top 40%', end: 'bottom 60%', scrub: 0.6 },
-      });
-      tl.fromTo(b, { yPercent: 100 }, { yPercent: 0, ease: 'meres.inOut', duration: 1 }, 0.15)
-        .to(a, { scale: 0.94, filter: 'brightness(0.65)', ease: 'none', duration: 1 }, 0.15);
-      if (draw) tl.add(draw.paused(false), 0);
     },
-    { scope: ref, dependencies: [full], revertOnUpdate: true },
+    { scope: ref },
   );
   return (
     <Chapter id={w.id} title={w.title} n={3}>
@@ -436,26 +415,15 @@ function WholeHome() {
         <div className="wrap grid12 mt-[clamp(40px,8vh,100px)] gap-y-10 lg:pl-[calc(var(--margin)+var(--index-w))]">
           <div className="wh-col col-span-12 lg:col-span-5">
             {w.paragraphs.map((p, i) => (
-              <div key={p} className="flex min-h-[40vh] items-center py-8 lg:min-h-[70vh]">
+              <div key={p} className="flex min-h-[36vh] items-center py-6 lg:min-h-[48vh]">
                 <p className={`wh-para ${i === 0 ? 'd4' : 'body-copy'}`}>{p}</p>
               </div>
             ))}
           </div>
           <div className="col-span-12 row-start-1 lg:col-span-7 lg:row-start-auto">
-            <div className="relative overflow-hidden lg:sticky lg:top-[12vh] lg:h-[76vh]">
-              <div className="aspect-[4/3] lg:aspect-auto lg:h-full">
-                <div className="wh-a absolute inset-0 origin-top">
-                  <ImageFrame crop="wineBar.full" fill sizes="(min-width:1024px) 55vw, 100vw" />
-                </div>
-                <div className="wh-b absolute inset-0" style={{ transform: isReduced() ? undefined : 'translateY(100%)' }}>
-                  <ImageFrame crop="diningNook.full" fill sizes="(min-width:1024px) 55vw, 100vw" />
-                </div>
-                {/* "how the rooms connect" — a plan line drawing across the seam */}
-                <svg className="wh-line pointer-events-none absolute inset-0 z-[3] h-full w-full text-linen/80" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none" stroke="currentColor" aria-hidden="true">
-                  <path data-draw="" d="M8,14 L8,52 L46,52 L46,88 L92,88" vectorEffect="non-scaling-stroke" />
-                  <path data-draw="" d="M46,52 A10,10 0 0,1 56,62" strokeDasharray="1 1.5" vectorEffect="non-scaling-stroke" />
-                  <path data-draw="" d="M5,52 L11,52 M43,88 L49,88 M89,85 L95,91 M5,49 L11,55" vectorEffect="non-scaling-stroke" />
-                </svg>
+            <div className="relative overflow-hidden lg:sticky lg:top-[16vh]">
+              <div className="aspect-[4/3] w-full overflow-hidden rounded-[2px] shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
+                <ImageFrame crop="diningNook.full" fill sizes="(min-width:1024px) 55vw, 100vw" />
               </div>
             </div>
           </div>
@@ -497,17 +465,23 @@ function Additions() {
     { scope: ref },
   );
   return (
-    <Chapter id={a.id} title={a.title} n={4} stack={false} background={<MaterialPanel variant="plaster" className="absolute inset-0" />}>
+    <Chapter id={a.id} title={a.title} n={4} stack={false} bg="bg-linen">
       <div ref={ref} className="wrap grid12 gap-y-14 pb-[var(--section-pad)] pt-[clamp(40px,8vh,100px)] lg:pl-[calc(var(--margin)+var(--index-w))]">
         <div className="col-span-12 grid gap-8 md:grid-cols-2">
           <figure className="relative border border-taupe/50 p-4">
             <DraftedCorners />
             <DraftingLines drawing="site" className="h-auto w-full text-taupe-deep" />
           </figure>
-          <figure className="relative border border-taupe/50 p-4">
-            <DraftedCorners />
-            <DraftingLines drawing="addition-section" className="h-auto w-full text-taupe-deep" />
-          </figure>
+          {images.exterior?.status === 'client' ? (
+            <figure className="relative min-h-[240px] overflow-hidden border border-taupe/50">
+              <ImageFrame crop="exterior.full" fill sizes="(min-width:768px) 50vw, 100vw" />
+            </figure>
+          ) : (
+            <figure className="relative border border-taupe/50 p-4">
+              <DraftedCorners />
+              <DraftingLines drawing="addition-section" className="h-auto w-full text-taupe-deep" />
+            </figure>
+          )}
         </div>
         <div className="col-span-12 flex flex-col gap-8 lg:col-span-6">
           {a.paragraphs.map((p) => (

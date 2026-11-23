@@ -1,18 +1,21 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { gsap, ScrollTrigger, useGSAP } from '@/motion/gsap';
-import { isReduced, isDesktop } from '@/motion/tokens';
+import { gsap, useGSAP } from '@/motion/gsap';
+import { isReduced } from '@/motion/tokens';
 import { entrance } from '@/motion/entrance';
 import { lineReveal, fadeUp, stackSection, scrubText, focusPullOnce, drawLines } from '@/motion/primitives';
 import { useFullMotion } from '@/motion/hooks/useMedia';
 import { home } from '@/content/copy';
 import { Page } from '@/components/Page';
 import { ImageFrame } from '@/components/ImageFrame';
+import { VisualizationLabel } from '@/components/VisualizationLabel';
 import { DraftingLines } from '@/components/DraftingLines';
 import { PrimaryCTA } from '@/components/PrimaryCTA';
 import { PlanRoom, Arrow } from '@/components/PlanRoom';
-import { PanelWipeFrame } from '@/components/PanelWipeFrame';
 import { LiquidStage } from '@/webgl/LiquidStage';
+import { SpacesInFocus } from '@/components/SpacesInFocus';
+import { SPACES_IN_FOCUS_AFTER_PLAN_ROOM } from '@/config';
+import { trust } from '@/data/trust';
 
 export default function Home() {
   return (
@@ -21,7 +24,9 @@ export default function Home() {
       <Details />
       <Together />
       <PlanRoom />
+      {SPACES_IN_FOCUS_AFTER_PLAN_ROOM && <SpacesInFocus />}
       <DriftField />
+      <Testimonials />
       <Closing />
     </Page>
   );
@@ -143,22 +148,25 @@ function Hero() {
   return (
     <section
       ref={ref}
-      className="hero relative overflow-hidden bg-linen md:h-[100svh]"
+      className="hero relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-forest-deep md:block md:h-[100svh]"
       data-header-theme="dark"
       aria-labelledby="hero-title"
     >
-      <div data-stack-inner className="relative h-full w-full">
-        <div className="relative h-[62svh] w-full md:absolute md:inset-0 md:h-full">
+      <div data-stack-inner className="relative flex h-full min-h-[100svh] w-full flex-col justify-end overflow-hidden md:block md:min-h-0">
+        <div className="absolute inset-0 h-full w-full overflow-hidden">
           <div className="hero-media absolute inset-0 overflow-hidden">
             <div className="hero-zoom absolute inset-0">
               <div className="hero-breathe absolute inset-0">
                 <LiquidStage frames={['kitchenHero.full']} ripple priority className="absolute inset-0 h-full w-full" />
               </div>
             </div>
-            {/* soft forest gradient under the text for contrast */}
+            {/* 55% ink gradient scrim: headline block sits at bottom-left over dark scrim so text never overlaps bright areas */}
             <div
-              className="pointer-events-none absolute inset-0 z-[2] hidden md:block"
-              style={{ background: 'linear-gradient(20deg, rgba(31,38,32,0.82) 0%, rgba(31,38,32,0.45) 38%, rgba(31,38,32,0) 64%)' }}
+              className="pointer-events-none absolute inset-0 z-[2]"
+              style={{
+                background:
+                  'linear-gradient(to top, rgba(30,31,27,0.92) 0%, rgba(30,31,27,0.78) 32%, rgba(30,31,27,0.55) 55%, rgba(30,31,27,0.18) 78%, transparent 100%)',
+              }}
             />
           </div>
           <DraftingLines
@@ -168,18 +176,18 @@ function Hero() {
           />
         </div>
 
-        <div className="hero-copy relative z-[4] md:absolute md:inset-x-0 md:bottom-0">
-          <div className="wrap pb-14 pt-10 text-ink md:pb-[clamp(48px,9vh,110px)] md:text-linen">
-            <p className="hero-eyebrow eyebrow mb-6 !text-taupe-deep md:!text-linen/80" data-reveal="manual">
+        <div className="hero-copy relative z-[4] w-full pt-20 md:absolute md:inset-x-0 md:bottom-0 md:pt-0">
+          <div className="wrap pb-12 pt-6 text-linen md:pb-[clamp(48px,9vh,110px)] md:pt-10">
+            <p className="hero-eyebrow eyebrow mb-4 !text-linen/80 md:mb-6" data-reveal="manual">
               {home.hero.eyebrow}
             </p>
-            <h1 id="hero-title" className="hero-h1 d1 max-w-[11ch]" data-reveal="manual">
+            <h1 id="hero-title" className="hero-h1 d1 max-w-[11ch] text-linen" data-reveal="manual">
               {home.hero.headline}
             </h1>
-            <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-              <p className="hero-rest body-copy max-w-[46ch] md:text-linen/90">{home.hero.supporting}</p>
+            <div className="mt-6 flex flex-col gap-6 md:mt-8 md:gap-8 lg:flex-row lg:items-end lg:justify-between">
+              <p className="hero-rest body-copy max-w-[46ch] text-linen/90">{home.hero.supporting}</p>
               <div className="hero-rest">
-                <PrimaryCTA tone="inherit" className="hero-cta" />
+                <PrimaryCTA tone="dark" className="hero-cta" />
               </div>
             </div>
           </div>
@@ -191,43 +199,131 @@ function Hero() {
 }
 
 /* ------------------------------------------------------------------ */
-/* "The details are personal." — a quiet beat: no pin, only reveals   */
+/* "The details are personal." — a quiet beat: single clean frame      */
 /* ------------------------------------------------------------------ */
 function Details() {
   const d = home.details;
-  const pairs = [
-    { text: d.moments[0], crop: 'kitchenHero.stools' as const, pos: 'lg:right-[24%] lg:top-[-8%] lg:w-[min(19vw,340px)]' },
-    { text: d.moments[1], crop: 'kitchenWide.island' as const, pos: 'lg:right-[0%] lg:top-[20%] lg:w-[min(17vw,300px)]' },
-    { text: d.moments[2], crop: 'diningNook.full' as const, pos: 'lg:right-[17%] lg:top-[66%] lg:w-[min(24vw,440px)]' },
+  const sectionRef = useRef<HTMLElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const isHovered = useRef(false);
+
+  const items = [
+    { text: d.moments[0], crop: 'kitchenDetail.full' as const, objectPosition: '60% 50%' },
+    { text: d.moments[1], crop: 'kitchenHero.full' as const, objectPosition: '50% 50%' },
+    { text: d.moments[2], crop: 'diningNook.full' as const, objectPosition: '50% 50%' },
   ];
+
+  // Auto-advance visibility observer
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Auto-advance every 3s while visible, pause on hover, reduced-motion shows line 1 statically
+  useEffect(() => {
+    if (!isVisible || isReduced()) return;
+    const interval = setInterval(() => {
+      if (!isHovered.current) {
+        setActiveIndex((prev) => (prev + 1) % items.length);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isVisible, items.length]);
+
   return (
-    <section className="section-pad relative z-[2] bg-linen" data-header-theme="light" aria-labelledby="details-title">
+    <section
+      ref={sectionRef}
+      className="section-pad relative z-[2] bg-linen"
+      data-header-theme="light"
+      aria-labelledby="details-title"
+      onPointerEnter={() => {
+        isHovered.current = true;
+      }}
+      onPointerLeave={() => {
+        isHovered.current = false;
+      }}
+    >
       <div className="wrap">
         <h2 id="details-title" className="d2 max-w-[12ch]" data-reveal="lines">
           {d.headline}
         </h2>
 
-        <div className="relative mt-[clamp(56px,10vh,120px)]" data-parallax-trigger="">
-          <ul className="relative z-[2] flex flex-col lg:w-[52%]">
-            {pairs.map((p) => (
-              <li key={p.text} className="border-t border-[var(--hairline)] py-7 md:py-9">
-                <p className="d4" data-reveal="lines">
-                  {p.text}
-                </p>
-              </li>
-            ))}
-          </ul>
-          {/* small floating images, drifting faster than the text */}
-          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 lg:mt-0 lg:block">
-            {pairs.map((p, i) => (
-              <div key={p.crop} className={`lg:absolute ${p.pos} ${i === 2 ? 'col-span-2 md:col-span-1' : ''}`} data-parallax="1.6">
-                <ImageFrame crop={p.crop} ratio={i === 1 ? '4 / 5' : '5 / 4'} sizes="(min-width:1024px) 28vw, 50vw" reveal="mask-up" parallax={0.4} />
-              </div>
-            ))}
+        {/* Desktop: lines on left (54%), single 4:3 frame on right (42%), gap >= 24px. Mobile: frame above lines at full width */}
+        <div className="mt-[clamp(56px,10vh,120px)] flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+          {/* Three lines (on mobile: below frame; on desktop: left side) */}
+          <div className="order-2 w-full lg:order-1 lg:max-w-[54%]">
+            <ul className="flex flex-col">
+              {items.map((item, i) => {
+                const isActive = activeIndex === i;
+                return (
+                  <li key={item.text} className="border-t border-[var(--hairline)] py-7 md:py-9">
+                    <button
+                      type="button"
+                      onClick={() => setActiveIndex(i)}
+                      onFocus={() => setActiveIndex(i)}
+                      aria-current={isActive ? 'true' : undefined}
+                      className={`w-full text-left transition-opacity duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink ${
+                        isActive ? 'opacity-100' : 'opacity-40 hover:opacity-75'
+                      }`}
+                    >
+                      <p className="d4" data-reveal="lines">
+                        {item.text}
+                      </p>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* Single landscape frame with 4:3 aspect ratio (on mobile: above lines; on desktop: right side ~5 cols) */}
+          <div className="order-1 w-full lg:order-2 lg:w-[42%] lg:max-w-[560px]">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2px] bg-linen-deep shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
+              {items.map((item, i) => {
+                const isActive = activeIndex === i;
+                return (
+                  <div
+                    key={item.crop}
+                    className={`absolute inset-0 transition-opacity ease-out ${
+                      isActive ? 'z-10 opacity-100' : 'pointer-events-none z-0 opacity-0'
+                    }`}
+                    style={{ transitionDuration: '800ms' }}
+                  >
+                    <div
+                      className="h-full w-full transition-transform ease-out"
+                      style={{
+                        transitionDuration: '800ms',
+                        transform: isActive ? 'scale(1)' : 'scale(1.05)',
+                        transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                      }}
+                    >
+                      <ImageFrame
+                        crop={item.crop}
+                        fill
+                        sizes="(min-width:1024px) 42vw, 100vw"
+                        objectPosition={item.objectPosition}
+                        label={false}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              <VisualizationLabel />
+            </div>
           </div>
         </div>
 
-        <div className="grid12 mt-[clamp(72px,14vh,180px)] gap-y-8">
+        {/* Clear gutter > 48px separating imagery from supporting narrative */}
+        <div className="grid12 mt-[clamp(96px,16vh,220px)] gap-y-8">
           <p className="d4 col-span-12 max-w-[22ch] lg:col-span-5" data-reveal="lines">
             {d.direction}
           </p>
@@ -320,7 +416,7 @@ function TogetherCardInner({ t }: { t: typeof home.together }) {
         <path data-draw="" d="M2,6 L14,-6 M0,0 L16,0" vectorEffect="non-scaling-stroke" />
         <path data-draw="" d="M2,406 L14,394 M0,400 L16,400" vectorEffect="non-scaling-stroke" />
       </svg>
-      <h2 id="together-title" className="together-title d3" data-reveal="manual">
+      <h2 id="together-title" className="together-title d3">
         {t.headline}
       </h2>
       <p className="together-founder body-copy mt-8 text-linen/90">{t.founder}</p>
@@ -329,56 +425,49 @@ function TogetherCardInner({ t }: { t: typeof home.together }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* "You should understand what you're saying yes to." — Drift Field    */
+/* "You should understand what you're saying yes to." — Transparency   */
 /* ------------------------------------------------------------------ */
 function DriftField() {
   const ref = useRef<HTMLElement>(null);
   const y = home.yes;
-  const frames = [
-    { crop: 'wineBar.arch' as const, speed: 0.6, cls: 'lg:left-[2%] lg:top-[4%] lg:w-[min(14vw,260px)]', ratio: '3 / 4', blur: true },
-    { crop: 'secondKitchen.chandelier' as const, speed: 1.0, cls: 'lg:right-[4%] lg:top-[14%] lg:w-[min(16vw,300px)]', ratio: '4 / 5' },
-    { crop: 'kitchenHero.pendants' as const, speed: 1.5, cls: 'lg:left-[5%] lg:top-[50%] lg:w-[min(15vw,290px)]', ratio: '5 / 4' },
-    { crop: 'kitchenDetail.faucet' as const, speed: 2.1, cls: 'lg:right-[1%] lg:top-[66%] lg:w-[min(13vw,240px)]', ratio: '3 / 4', blur: true },
-  ];
+
   useGSAP(
     () => {
       const root = ref.current!;
       if (isReduced()) return;
-      // The paragraph fades from its top edge as it leaves.
-      root.querySelectorAll<HTMLElement>('.drift-text > *').forEach((el) => {
-        gsap.to(el, {
-          opacity: 0,
-          ease: 'none',
-          scrollTrigger: { trigger: el, start: 'top 20%', end: 'top -2%', scrub: true },
-        });
-      });
-      if (isDesktop()) {
-        root.querySelectorAll<HTMLElement>('[data-blur]').forEach((el) => gsap.set(el, { filter: 'blur(2px)' }));
-      }
+      lineReveal(root.querySelector<HTMLElement>('#yes-title'));
     },
     { scope: ref },
   );
+
   return (
-    <section ref={ref} className="relative overflow-hidden bg-linen" data-header-theme="light" aria-labelledby="yes-title">
-      <div className="wrap relative py-[clamp(120px,22vh,280px)]" data-parallax-trigger="">
-        <div className="pointer-events-none mb-16 grid grid-cols-2 gap-4 lg:absolute lg:inset-0 lg:mb-0 lg:block" aria-hidden="false">
-          {frames.map((f) => (
-            <div key={f.crop} className={`lg:absolute ${f.cls}`} data-parallax={String(f.speed)} data-blur={f.blur ? '' : undefined}>
-              <ImageFrame crop={f.crop} ratio={f.ratio} sizes="(min-width:1024px) 22vw, 50vw" reveal="mask-up" />
-            </div>
-          ))}
-        </div>
-        <div className="drift-text relative z-[2] mx-auto max-w-[36rem] text-center">
+    <section ref={ref} className="relative overflow-hidden bg-linen py-[clamp(96px,16vh,180px)]" data-header-theme="light" aria-labelledby="yes-title">
+      <div className="wrap relative">
+        <div className="mx-auto max-w-[64rem] text-center">
           <h2 id="yes-title" className="d3" data-reveal="lines">
             {y.headline}
           </h2>
-          {y.paragraphs.map((p) => (
-            <p key={p} className="body-copy mx-auto mt-8" data-reveal="fade">
-              {p}
-            </p>
-          ))}
+
+          {/* 3 numbered steps: 3 columns on desktop with hairline, stacked on mobile */}
+          <div className="mt-14 grid grid-cols-1 gap-8 text-left md:grid-cols-3 md:gap-0">
+            {y.steps.map((st, i) => (
+              <div
+                key={st.num}
+                className={`relative px-6 py-8 md:px-8 ${
+                  i > 0 ? 'border-t border-[var(--hairline)] md:border-l md:border-t-0' : ''
+                }`}
+                data-mask="mask-up"
+                style={{ animationDelay: `${i * 0.15}s` }}
+              >
+                <span className="eyebrow mb-3 block font-sans text-taupe-deep">{st.num}</span>
+                <h3 className="d4 mb-3 font-serif font-normal text-ink">{st.title}</h3>
+                <p className="body-copy text-[1.0625rem] leading-relaxed text-ink/80">{st.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="relative z-[2] mx-auto mt-[clamp(72px,12vh,140px)] max-w-[36rem] text-center">
+
+        <div className="relative z-[2] mx-auto mt-[clamp(64px,10vh,120px)] max-w-[36rem] text-center">
           <p className="d4 italic" data-reveal="lines">
             {y.terminology}
           </p>
@@ -392,29 +481,45 @@ function DriftField() {
   );
 }
 
+function Testimonials() {
+  if (!trust.testimonials || trust.testimonials.length === 0) return null;
+  return (
+    <section className="section-pad relative z-[2] bg-linen" data-header-theme="light" aria-label="Client testimonials">
+      <div className="wrap">
+        <p className="eyebrow mb-4">TESTIMONIALS</p>
+        <h2 className="d3 mb-12 max-w-[14ch]">Conversations and completed work.</h2>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          {trust.testimonials.slice(0, 3).map((item, idx) => (
+            <div key={idx} className="flex flex-col justify-between border-t border-[var(--hairline)] pt-6">
+              <blockquote className="body-copy italic text-ink/90">“{item.quote}”</blockquote>
+              <div className="mt-6">
+                <p className="font-medium text-ink">{item.name}</p>
+                <p className="text-sm text-taupe-deep">{item.project}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* "What should feel different when you come home?" — closing chapter  */
 /* ------------------------------------------------------------------ */
 function Closing() {
   const ref = useRef<HTMLElement>(null);
-  const [idx, setIdx] = useState(0);
   const c = home.closing;
   useGSAP(
     () => {
       const root = ref.current!;
       focusPullOnce(root.querySelector<HTMLElement>('.start-with'), 'top 80%');
-      ScrollTrigger.create({
-        trigger: root,
-        start: 'top 15%',
-        onEnter: () => setIdx(1),
-        onLeaveBack: () => setIdx(0),
-      });
     },
     { scope: ref },
   );
   return (
-    <section ref={ref} className="on-dark relative bg-forest text-linen" data-header-theme="dark" aria-labelledby="closing-title">
-      <div data-stack-inner className="wrap section-pad">
+    <section ref={ref} className="on-dark relative z-[2] bg-forest text-linen" data-header-theme="dark" aria-labelledby="closing-title">
+      <div className="wrap section-pad">
         <div className="grid12 items-center gap-y-14">
           <div className="col-span-12 lg:col-span-6">
             <h2 id="closing-title" className="d2 max-w-[13ch]" data-reveal="lines">
@@ -426,22 +531,20 @@ function Closing() {
             <p className="start-with d2 mt-14 origin-left will-change-[filter]">{c.start}</p>
             <div className="mt-12" data-reveal="fade">
               <PrimaryCTA tone="dark" />
+              {trust.serviceTowns.length > 0 ? (
+                <p className="mt-4 text-sm text-linen/75">Serving {trust.serviceTowns.join(', ')}</p>
+              ) : (
+                <p className="mt-4 text-sm text-linen/75">MERES serves homeowners across Seattle’s Eastside.</p>
+              )}
             </div>
           </div>
           <div className="col-span-12 lg:col-span-5 lg:col-start-8">
-            <div data-mask="mask-up">
-              <PanelWipeFrame
-                frames={[{ crop: 'diningNook.garden' }, { crop: 'diningNook.full' }]}
-                index={idx}
-                panel="linen"
-                className="forest-vignette aspect-[4/5] w-full"
-                sizes="(min-width:1024px) 40vw, 100vw"
-              />
+            <div className="forest-vignette relative aspect-[4/5] w-full overflow-hidden bg-forest-deep">
+              <ImageFrame crop="diningNook.garden" fill sizes="(min-width:1024px) 40vw, 100vw" />
             </div>
           </div>
         </div>
       </div>
-      <div data-stack-shade className="pointer-events-none absolute inset-0 bg-forest-deep opacity-0" />
     </section>
   );
 }

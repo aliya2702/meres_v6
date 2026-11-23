@@ -2,12 +2,15 @@ import { useRef, useState } from 'react';
 import { gsap, useGSAP } from '@/motion/gsap';
 import { entrance } from '@/motion/entrance';
 import { useAppState } from '@/app/store';
+import { ENABLE_INTRO } from '@/config';
 import { Logo } from './Logo';
 
 const KEY = 'meres:intro-seen';
 
 export const shouldShowPreloader = () => {
+  if (!ENABLE_INTRO) return false;
   try {
+    if (typeof window === 'undefined') return false;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
     return sessionStorage.getItem(KEY) !== '1';
   } catch {
@@ -16,8 +19,9 @@ export const shouldShowPreloader = () => {
 };
 
 /**
- * First visit per session only. The mark's five paths reveal one after another while MERES rises,
- * then the lockup flips into its place in the header as the hero sequence begins (≤ 1.6s).
+ * First visit per session only (if ENABLE_INTRO is true).
+ * Runs for at most 0.8s, never on route changes or hash navigation,
+ * never when prefers-reduced-motion is set, and never blocks scrolling or content.
  */
 export function Preloader({ onDone }: { onDone: () => void }) {
   const root = useRef<HTMLDivElement>(null);
@@ -55,25 +59,26 @@ export function Preloader({ onDone }: { onDone: () => void }) {
         window.setTimeout(onDone, 0);
       };
 
-      // Safety: the handoff never waits on assets; if anything stalls, release the page.
-      const safety = gsap.delayedCall(4, () => {
+      // Failsafe: at most 0.8s total duration
+      const safety = gsap.delayedCall(0.8, () => {
         if (!entrance.fired) entrance.fire();
         finish();
       });
+
       const tl = gsap.timeline();
       tl.fromTo(
         paths,
         { clipPath: 'inset(100% 0% 0% 0%)', opacity: 0 },
-        { clipPath: 'inset(0% 0% 0% 0%)', opacity: 1, duration: 0.34, stagger: 0.09, ease: 'meres.out' },
+        { clipPath: 'inset(0% 0% 0% 0%)', opacity: 1, duration: 0.18, stagger: 0.04, ease: 'meres.out' },
       )
-        .from(letters, { yPercent: 110, duration: 0.6, stagger: 0.05, ease: 'meres.out' }, 0.1)
-        .add('flip', 0.85)
+        .from(letters, { yPercent: 110, duration: 0.25, stagger: 0.03, ease: 'meres.out' }, 0.05)
+        .add('flip', 0.4)
         .call(() => entrance.fire(), [], 'flip')
-        .to(el, { backgroundColor: 'rgba(244,239,230,0)', duration: 0.5, ease: 'meres.inOut' }, 'flip')
+        .to(el, { backgroundColor: 'rgba(244,239,230,0)', duration: 0.25, ease: 'meres.inOut' }, 'flip')
         .to(
           wrap,
           {
-            duration: 0.5,
+            duration: 0.35,
             ease: 'meres.inOut',
             scale: 1,
             x: () => {
@@ -91,18 +96,17 @@ export function Preloader({ onDone }: { onDone: () => void }) {
           },
           'flip',
         )
-        // Hold in the header slot (in forest) until the hero photograph has opened beneath it,
-        // then match the header's colour and hand over.
         .to(
           wrap,
           {
             color: () => (headerLogo ? getComputedStyle(headerLogo).color : '#F4EFE6'),
-            duration: 0.6,
+            duration: 0.15,
             ease: 'meres.soft',
           },
-          'flip+=1.05',
+          'flip+=0.2',
         )
         .call(finish);
+
       return () => safety.kill();
     },
     { scope: root },

@@ -1,4 +1,6 @@
-/** Mandatory disclosure on every photograph, crop and WebGL surface showing one. */
-export function VisualizationLabel({ className = '' }: { className?: string }) {
-  return <span className={`viz-label ${className}`}>Concept visualization</span>;
+import { ImageCaption } from './ImageCaption';
+
+/** Quiet disclosure label. */
+export function VisualizationLabel({ className = '', label }: { className?: string; label?: string }) {
+  return <ImageCaption className={className} label={label} />;
 }

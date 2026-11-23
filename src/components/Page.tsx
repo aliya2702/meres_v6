@@ -8,7 +8,7 @@ export function Page({ children, footer = true, className = '' }: { children: Re
   const ref = useRef<HTMLDivElement>(null);
   useGSAP(() => autoMotion(ref.current), { scope: ref });
   return (
-    <div ref={ref} className={`page ${className}`}>
+    <div ref={ref} className={`page overflow-x-clip ${className}`}>
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
       </main>

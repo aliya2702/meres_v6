@@ -37,7 +37,7 @@ export const ImageFrame = forwardRef<HTMLDivElement, ImageFrameProps>(function I
     ratio,
     fill,
     vignette,
-    label = true,
+    label = false,
     children,
     imgClassName = '',
     objectPosition,
@@ -64,6 +64,7 @@ export const ImageFrame = forwardRef<HTMLDivElement, ImageFrameProps>(function I
             <img
               src={img.jpg1672}
               alt={img.alt}
+              data-image-id={img.file.replace('meres-', '')}
               width={img.width}
               height={img.height}
               loading={priority ? 'eager' : 'lazy'}

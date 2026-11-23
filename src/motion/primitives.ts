@@ -43,6 +43,10 @@ export function lineReveal(
             ? undefined
             : { trigger: el, start: opts.start ?? 'top 85%', once: true },
       });
+      // 3s failsafe forces lines visible if not triggered
+      gsap.delayedCall(3, () => {
+        gsap.to(self.lines, { yPercent: 0, opacity: 1, duration: 0.3, overwrite: 'auto' });
+      });
       return anim;
     },
   });
@@ -58,11 +62,14 @@ export function fadeUp(
   const list = gsap.utils.toArray<HTMLElement>(targets);
   if (!list.length) return null;
   gsap.set(list, { visibility: 'visible' });
-  return gsap.from(list, {
+  if (reduced) {
+    return gsap.from(list, { opacity: 0, duration: 0.2, ease: 'none' });
+  }
+  const tween = gsap.from(list, {
     opacity: 0,
-    y: reduced ? 0 : opts.y ?? 24,
-    duration: reduced ? 0.2 : 0.9,
-    ease: reduced ? 'none' : 'meres.out',
+    y: opts.y ?? 24,
+    duration: 0.9,
+    ease: 'meres.out',
     delay: opts.delay ?? 0,
     stagger: opts.stagger ?? 0.1,
     scrollTrigger:
@@ -70,6 +77,11 @@ export function fadeUp(
         ? undefined
         : { trigger: opts.trigger ?? list[0], start: opts.start ?? 'top 88%', once: true },
   });
+  // 3s failsafe forces elements visible
+  gsap.delayedCall(3, () => {
+    gsap.to(list, { opacity: 1, y: 0, duration: 0.3, overwrite: 'auto' });
+  });
+  return tween;
 }
 
 /** 3. Parallax Layer — yPercent from +speed*20 to -speed*20, scrubbed. */

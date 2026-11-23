@@ -9,7 +9,9 @@ import { scrollToHash } from './lenis';
 import { Header } from '@/components/Header';
 import { Menu } from '@/components/Menu';
 import { CursorDot } from '@/components/CursorDot';
+import { checkTrustDebug } from '@/data/trust';
 import { Preloader, shouldShowPreloader } from '@/components/Preloader';
+import { ImageDebugOverlay } from '@/components/ImageDebugOverlay';
 import Home from '@/pages/Home';
 import Services from '@/pages/Services';
 import Approach from '@/pages/Approach';
@@ -46,6 +48,7 @@ function Shell() {
     if (booted.current) return;
     booted.current = true;
     entrance.reset();
+    checkTrustDebug();
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         ScrollTrigger.refresh();
@@ -68,6 +71,13 @@ function Shell() {
       return () => clearTimeout(t);
     }
   }, [location.pathname]);
+
+  // Handle hash scrolling on route navigation or hash updates
+  useEffect(() => {
+    if (location.hash) {
+      window.setTimeout(() => scrollToHash(location.hash), 80);
+    }
+  }, [location.pathname, location.hash]);
 
   return (
     <>
@@ -95,6 +105,7 @@ function Shell() {
         )}
       </PageTransition>
       <CursorDot />
+      <ImageDebugOverlay />
       {preload && (
         <Preloader
           onDone={() => {

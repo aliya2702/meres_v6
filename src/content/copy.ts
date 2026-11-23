@@ -67,10 +67,22 @@ export const home = {
   },
   yes: {
     headline: 'You should understand what you’re saying yes to.',
-    paragraphs: [
-      'Before committing to the work, you deserve to understand what is included, what remains undecided and what could affect cost or timing.',
-      'We begin by discussing your priorities alongside the practical realities of construction—including how the work may affect daily life.',
-      'As decisions arise, their implications for scope, cost and schedule belong in the conversation. You should have room to ask questions, understand the choices and make an informed decision.',
+    steps: [
+      {
+        num: '01',
+        title: 'Understand what is included.',
+        text: 'Know what is in scope, what is still undecided and what could affect cost or timing.',
+      },
+      {
+        num: '02',
+        title: 'Start with your priorities.',
+        text: 'We weigh them against the practical realities of construction, including daily life during the work.',
+      },
+      {
+        num: '03',
+        title: 'Decide with room to ask.',
+        text: 'Scope, cost and schedule implications are discussed as each decision arises.',
+      },
     ],
     terminology: 'You don’t need to know construction terminology to explain what matters to you.',
     link: 'Our approach',

@@ -4,6 +4,7 @@ import { isReduced } from '@/motion/tokens';
 import { lineReveal } from '@/motion/primitives';
 import { entrance } from '@/motion/entrance';
 import { contact } from '@/content/copy';
+import { trust } from '@/data/trust';
 import { Page } from '@/components/Page';
 import { ImageFrame } from '@/components/ImageFrame';
 import { InquiryForm } from '@/components/InquiryForm';
@@ -61,6 +62,13 @@ export default function Contact() {
                   {p}
                 </p>
               ))}
+              {trust.phone && (
+                <p className="mt-4">
+                  <a href={`tel:${trust.phone.replace(/[^0-9+]/g, '')}`} className="link-draw text-linen hover:text-linen">
+                    {trust.phone}
+                  </a>
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -78,6 +86,13 @@ export default function Contact() {
                     {p}
                   </p>
                 ))}
+                {trust.phone && (
+                  <p className="mt-4">
+                    <a href={`tel:${trust.phone.replace(/[^0-9+]/g, '')}`} className="link-draw text-ink hover:text-ink">
+                      {trust.phone}
+                    </a>
+                  </p>
+                )}
               </div>
             </div>
             <InquiryForm />

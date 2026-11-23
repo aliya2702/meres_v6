@@ -5,42 +5,43 @@ import { isReduced } from '@/motion/tokens';
 import { drawLines, lineReveal } from '@/motion/primitives';
 import { useFullMotion } from '@/motion/hooks/useMedia';
 import { home } from '@/content/copy';
-import type { CropKey } from '@/data/images';
+import { images, type CropKey } from '@/data/images';
 import { DraftingLines, PLAN_VIEWBOX, planRooms } from './DraftingLines';
 import { ImageFrame } from './ImageFrame';
-import { MaterialPanel } from './MaterialPanel';
 import { flipToFull } from './flipToFull';
 
 type RoomId = (typeof planRooms)[number]['id'];
-const roomCrop: Partial<Record<RoomId, CropKey>> = {
-  kitchens: 'kitchenWide.island',
-  'whole-home': 'wineBar.full',
-};
 // Destination opening frame for shared-element continuity
 const destCrop: Partial<Record<RoomId, CropKey>> = {
   kitchens: 'kitchenHero.full',
-  'whole-home': 'wineBar.full',
+  'whole-home': 'diningNook.full',
+  'additions-custom-homes': images.exterior?.status === 'client' ? 'exterior.full' : undefined,
 };
 const destColor: Record<RoomId, string> = {
   kitchens: '#2D372C',
   bathrooms: '#E9DDCD',
-  'whole-home': '#2D372C',
+  'whole-home': '#E9DDCD',
   'additions-custom-homes': '#F4EFE6',
 };
 
 export function RoomFill({ id, sizes = '30vw' }: { id: RoomId; sizes?: string }): ReactNode {
-  if (id === 'kitchens' || id === 'whole-home') return <ImageFrame crop={roomCrop[id]!} fill sizes={sizes} />;
+  if (id === 'kitchens') return <ImageFrame crop="kitchenHero.full" fill sizes={sizes} />;
+  if (id === 'whole-home') return <ImageFrame crop="diningNook.full" fill sizes={sizes} />;
   if (id === 'bathrooms')
     return (
-      <MaterialPanel variant="stone" className="absolute inset-0">
-        <div className="caustic" />
-        <div className="caustic b" />
-      </MaterialPanel>
+      <div className="relative h-full w-full bg-linen">
+        <DraftedCorners className="text-taupe" />
+        <DraftingLines drawing="bath-elevation" className="room-drawing absolute inset-[10%] h-[80%] w-[80%] text-taupe-deep" />
+      </div>
     );
+  if (id === 'additions-custom-homes' && images.exterior?.status === 'client') {
+    return <ImageFrame crop="exterior.full" fill sizes={sizes} />;
+  }
   return (
-    <MaterialPanel variant="plaster" className="absolute inset-0">
+    <div className="relative h-full w-full bg-linen">
+      <DraftedCorners className="text-taupe" />
       <DraftingLines drawing="addition-section" className="room-drawing absolute inset-[10%] h-[80%] w-[80%] text-taupe-deep" />
-    </MaterialPanel>
+    </div>
   );
 }
 
@@ -158,9 +159,9 @@ function PlanRoomPinned() {
               >
                 <DraftingLines drawing="plan" className="absolute inset-0 h-full w-full" />
                 {planRooms.map((r, i) => (
-                  <a
+                  <Link
                     key={r.id}
-                    href={`/services#${r.id}`}
+                    to={`/services#${r.id}`}
                     onClick={(e) => go(e, r.id)}
                     className="plan-room group absolute block overflow-hidden"
                     data-door={doorAt(r)}
@@ -181,7 +182,7 @@ function PlanRoomPinned() {
                       </span>
                     </span>
                     <span className="sr-only">{services[i].link}</span>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>

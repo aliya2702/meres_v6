@@ -2,9 +2,10 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap, useGSAP } from '@/motion/gsap';
 import { isReduced } from '@/motion/tokens';
-import { stackSection } from '@/motion/primitives';
 import { scrollToTarget } from '@/app/lenis';
 import { footer } from '@/content/copy';
+import { trust } from '@/data/trust';
+import { SHOW_CONCEPT_NOTE } from '@/config';
 import { Mark } from './Mark';
 import { PrimaryCTA } from './PrimaryCTA';
 
@@ -24,14 +25,6 @@ export function Footer() {
     () => {
       const el = ref.current;
       if (!el) return;
-      let prev = el.previousElementSibling as HTMLElement | null;
-      if (prev?.tagName === 'MAIN') prev = prev.lastElementChild as HTMLElement | null;
-      if (prev && !prev.hasAttribute('data-no-stack')) {
-        stackSection(prev, {
-          inner: prev.querySelector<HTMLElement>('[data-stack-inner]') ?? undefined,
-          shade: prev.querySelector<HTMLElement>('[data-stack-shade]') ?? undefined,
-        });
-      }
       if (isReduced()) return;
       gsap.fromTo(
         word.current,
@@ -58,7 +51,7 @@ export function Footer() {
   return (
     <footer
       ref={ref}
-      className="on-dark relative z-[5] overflow-hidden border-t border-linen/10 bg-forest-deep text-linen shadow-[0_-30px_60px_-30px_rgba(0,0,0,0.45)]"
+      className="on-dark relative z-[1] overflow-hidden border-t border-linen/10 bg-forest-deep text-linen"
       data-header-theme="dark"
     >
       <div className="wrap pb-10 pt-[clamp(80px,12vh,160px)]">
@@ -66,7 +59,17 @@ export function Footer() {
           <div className="footer-fade col-span-12 flex flex-col gap-5 md:col-span-5">
             <Mark className="h-14 w-auto self-start text-linen" title="MERES" />
             <p className="eyebrow">{footer.location}</p>
+            {trust.phone && (
+              <a href={`tel:${trust.phone.replace(/[^0-9+]/g, '')}`} className="link-draw self-start text-linen/90 hover:text-linen">
+                {trust.phone}
+              </a>
+            )}
             <p className="d4 max-w-[18ch]">{footer.philosophy}</p>
+            {trust.serviceTowns.length > 0 ? (
+              <p className="text-sm text-linen/75">Serving {trust.serviceTowns.join(', ')}</p>
+            ) : (
+              <p className="text-sm text-linen/75">MERES serves homeowners across Seattle’s Eastside.</p>
+            )}
           </div>
           <nav aria-label="Footer" className="footer-fade col-span-12 md:col-span-3">
             <ul className="flex flex-col">
@@ -93,10 +96,24 @@ export function Footer() {
         {footer.wordmark}
       </p>
 
-      <div className="wrap relative flex items-center justify-between gap-6 border-t border-linen/15 py-6">
-        <Link to="/privacy" className="link-draw text-[1.1875rem] text-linen/80 hover:text-linen">
-          Privacy notice
-        </Link>
+      <div className="wrap relative flex flex-col md:flex-row items-center justify-between gap-4 border-t border-linen/15 py-6">
+        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-center md:text-left">
+          <Link to="/privacy" className="link-draw text-[1.1875rem] text-linen/80 hover:text-linen">
+            Privacy notice
+          </Link>
+          {(trust.licenceNumber || trust.insuranceStatement) && (
+            <span className="text-xs text-linen/60">
+              {[trust.licenceNumber ? `Licence #${trust.licenceNumber}` : null, trust.insuranceStatement]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+          )}
+          {SHOW_CONCEPT_NOTE && (
+            <span className="text-xs text-linen/60">
+              Images marked as concept visualizations are not photographs of finished projects.
+            </span>
+          )}
+        </div>
         <button
           type="button"
           onClick={() => scrollToTarget(0, { offset: 0 })}

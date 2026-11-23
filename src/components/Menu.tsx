@@ -5,6 +5,7 @@ import { isReduced } from '@/motion/tokens';
 import { useAppState } from '@/app/store';
 import { getLenis } from '@/app/lenis';
 import { nav, serviceAnchors, philosophy } from '@/content/copy';
+import { trust } from '@/data/trust';
 import type { CropKey } from '@/data/images';
 import { ImageFrame } from './ImageFrame';
 import { PrimaryCTA } from './PrimaryCTA';
@@ -154,7 +155,7 @@ export function Menu() {
       aria-modal="true"
       aria-label="Site menu"
       aria-hidden={!menuOpen}
-      className="on-dark fixed inset-0 z-[110] flex flex-col text-linen lg:flex-row"
+      className="on-dark fixed inset-0 z-[110] flex flex-col text-linen lg:flex-row overflow-hidden"
       style={{ visibility: 'hidden', clipPath: 'inset(100% 0% 0% 0%)' }}
       data-header-theme="dark"
     >
@@ -164,13 +165,14 @@ export function Menu() {
         className="relative order-1 h-[40svh] w-full shrink-0 overflow-hidden bg-forest-deep lg:order-2 lg:h-full lg:w-[55%]"
         aria-hidden="true"
       >
-        {menuImages.map((c) => (
-          <div key={c} className="menu-layer absolute inset-0" style={{ visibility: 'hidden', clipPath: ARCH_CLOSED }}>
-            <div className="img-scale-wrap absolute inset-0">
-              <ImageFrame crop={c} fill sizes="(min-width:1024px) 55vw, 100vw" vignette />
+        {menuOpen &&
+          menuImages.map((c) => (
+            <div key={c} className="menu-layer absolute inset-0" style={{ visibility: 'hidden', clipPath: ARCH_CLOSED }}>
+              <div className="img-scale-wrap absolute inset-0">
+                <ImageFrame crop={c} fill sizes="(min-width:1024px) 55vw, 100vw" vignette />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-forest-deep/60 to-transparent" />
       </div>
 
@@ -224,6 +226,11 @@ export function Menu() {
           </ul>
         </nav>
         <div className="menu-fade mt-10 flex flex-col gap-6">
+          {trust.phone && (
+            <a href={`tel:${trust.phone.replace(/[^0-9+]/g, '')}`} className="link-draw self-start text-[1.1875rem] text-linen/90 hover:text-linen">
+              {trust.phone}
+            </a>
+          )}
           <p className="max-w-[30ch] italic text-linen/75">{philosophy}</p>
           <PrimaryCTA tone="dark" />
         </div>

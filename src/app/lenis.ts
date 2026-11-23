@@ -41,8 +41,21 @@ export function scrollToTarget(target: Element | number, opts: { immediate?: boo
 
 export function scrollToHash(hash: string, immediate = false) {
   if (!hash || hash === '#') return false;
-  const el = document.getElementById(decodeURIComponent(hash.slice(1)));
-  if (!el) return false;
+  const id = decodeURIComponent(hash.slice(1));
+  const el = document.getElementById(id);
+  if (!el) {
+    // Retry once after route transition and layout render
+    window.setTimeout(() => {
+      const retryEl = document.getElementById(id);
+      if (retryEl) scrollToTarget(retryEl, { immediate });
+    }, 120);
+    return false;
+  }
   scrollToTarget(el, { immediate });
+  // Re-adjust after layout, webfonts or images settle
+  window.setTimeout(() => {
+    const el2 = document.getElementById(id);
+    if (el2) scrollToTarget(el2, { immediate });
+  }, 350);
   return true;
 }

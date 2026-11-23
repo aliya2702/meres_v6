@@ -102,10 +102,15 @@ export function Header() {
   return (
     <header
       ref={ref}
-      className={`site-header fixed inset-x-0 top-0 z-[120] ${menuOpen ? 'menu-open' : ''}`}
+      className={`site-header fixed inset-x-0 top-0 z-[120] max-md:bg-forest max-md:text-linen max-md:shadow-[0_2px_12px_rgba(0,0,0,0.18)] ${menuOpen ? 'menu-open' : ''}`}
       data-tone={effectiveTone}
     >
-      <div className="wrap relative flex h-[84px] items-center justify-between gap-6">
+      {/* Soft top scrim on desktop so logo and nav remain readable over lights */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 hidden h-[120px] bg-gradient-to-b from-forest-deep/80 via-forest-deep/35 to-transparent md:block"
+        aria-hidden="true"
+      />
+      <div className="wrap relative flex h-[64px] items-center justify-between gap-6 md:h-[84px]">
         <div className="flex items-center gap-8">
           <Magnetic>
             <button
